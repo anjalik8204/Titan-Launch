@@ -1,127 +1,107 @@
-local composer = require("composer")
+local physics = require( "physics" )
+physics.start()
+physics.setGravity(0, 0)
+math.randomseed( os.time())
+local gameLoopTimer
+local orbitalTime
 
-display.setStatusBar(display.HiddenStatusBar)
+local enterScreen = display.newText("Titan.Launch", 300, 700, native.systemFont, 50 )
+enterScreen:setFillColor(255, 255, 255)
+enterScreen:toFront()
 
-math.randomseed(os.time())
-
-composer.gotoScene("menu")
-
-
-
-
--- -- Generating planets at 3  specific locations
-
-
-
--- local earth = math.random(3)
-
-
--- local planetTable = {}
-
--- local function qwerty () 
---     local planet1 = display.newImageRect( "planet1.png", 100, 100 )
---     table.insert(planetTable, planet)
-    
-
---     local planet2 = display.newImageRect("planet2.png", 100, 100)
---     table.insert(planetTable, planet2)
-    
-
---     local planet3 = display.newImageRect("planet3.png", 100, 100)
---     table.insert(planetTable, planet3)
-    
-
--- end
-
--- local function createplanets()
-    
---  if earth == 1 then 
---     local planet1 = display.newImageRect( "planet1.png", 850, 500 )
---     planet1.x = display.contentCenterX + 30
---     planet1.y = display.contentCenterY + 250
-    
-
---      elseif earth == 2 then 
---     local planet2 = display.newImageRect("planet2.png", 900, 500)
---     planet2.x = display.contentCenterX - 80
---     planet2.y = display.contentCenterY  + 70
- 
-
---    elseif earth == 3 then 
---     local planet3 = display.newImageRect("planet3.png", 900, 500)
---     planet3.x = display.contentCenterX  + 40
---     planet3.y = display.contentCenterY - 180
-
--- end
-
---     if earth==1 then 
---       math.random (2,3)
---     elseif earth == 2 then 
---       math.random(1,3)
---     elseif earth == 3 then
---       math.random(1,2)
---     end
--- end 
-
---  qwerty()
--- createplanets()
-
-
--- -- This is the gravity
-
--- --  local physics = require("physics")
--- --  physics.start()
--- --  physics.setGravity( 0, 0 )
--- --  math.randomseed( os.time() )
+local background = display.newImageRect("background.png", 2000, 2000 )
+background.x = display.contentCenterX
+background.y = display.contentCenterY
 
  
--- -- local function gravity ()
--- --     -- Set radial gravity simulation values
--- --    local fieldRadius = 150
--- --    local fieldPower = 0.4
-   
--- --     local field = display.newCircle( display.contentCenterX + 200, display.contentCenterY - 600, fieldRadius )
--- --    field.alpha = 0.5
-    
--- --    -- Add physical body (sensor) to field
--- --    physics.addBody( field, "static", { isSensor=true, radius=fieldRadius } )
-   
--- --    local function collideWithField( self, event )
-    
--- --       local objectToPull = event.other
-   
--- --       if ( event.phase == "began" and objectToPull.touchJoint == nil ) then
-   
--- --           -- Create touch joint after short delay (10 milliseconds)
--- --           timer.performWithDelay( 10,
--- --               function()
--- --                   -- Create touch joint
--- --                   objectToPull.touchJoint = physics.newJoint( "touch", objectToPull, objectToPull.x, objectToPull.y )
--- --                   -- Set physical properties of touch joint
--- --                   objectToPull.touchJoint.frequency = fieldPower
--- --                   objectToPull.touchJoint.dampingRatio = 0.0
--- --                   -- Set touch joint "target" to center of field
--- --                   objectToPull.touchJoint:setTarget( self.x, self.y )
--- --               end
--- --           )
--- --          elseif ( event.phase == "ended" and objectToPull.touchJoint ~= nil ) then
+local bPlanet = display.newImageRect("planet.png",  500, 400 )
+bPlanet.x = display.contentCenterX
+bPlanet.y =  1000
 
--- --             objectToPull.touchJoint:removeSelf()
--- --             objectToPull.touchJoint = nil
--- --       end
--- --    end
--- --    field.collision = collideWithField
--- --    field:addEventListener( "collision" )
-    
--- --    for i = 1,5 do
-    
--- --       local object = display.newCircle( 100, (i*50)+10, 10 )
--- --       physics.addBody( object, { radius=10 } )
-   
--- --       local velocity = math.random( 80, 120 )
--- --       object:setLinearVelocity( velocity, 0 )
--- --    end
--- --    end
+local tPlanet = display.newImageRect("planet.png", 500, 400, 15 )
+tPlanet.x = 500
+tPlanet.y = 300
+
+
+
+local anchorX = bPlanet.x 
+local anchorY = bPlanet.y
+local changeX = 0
+local changeY = 0
+local t = 0
+local tanX
+local tanY
+local score = 0 
+local displayScore = display.newText("your score : "..score, 300, 100, native.systemFont, 50)
+
+local rocket = display.newCircle( 500, 700, 25)
+rocket.x = display.contentCenterX
+rocket.y = display.contentCenterY
+physics.addBody(rocket, "dynamic")
+
+local function orbit( event )
+   tanX = changeX
+   tanY = changeY
+   changeX = anchorX + 200 * math.cos(5 * t)
+   changeY = anchorY - 200 * math.sin(5 * t)
+   rocket.x = changeX
+   rocket.y = changeY
+   t = t + 5
+   tanX = changeX - tanX
+   tanY = changeY - tanY
   
+end
+Runtime:addEventListener( "enterFrame", orbit )
 
--- --   gravity()
+local function launch( event )
+   print("launch called")
+   rocket:setLinearVelocity(40 * tanX, 40 * tanY)
+  Runtime:removeEventListener( "enterFrame", orbit)
+  gameLoopTimer = timer.performWithDelay(100, gameLoop, 0)
+ end
+
+ bPlanet:addEventListener("tap", launch)
+ local left = true
+ function gameLoop (event)
+   if (rocket.y <= 400 and rocket.x <= 700 and rocket.x >= 100 ) then
+
+      local aPlanet = display.newImageRect("planet.png", 500, 400)
+     -- aPlanet:toBack()
+      Runtime:addEventListener( "enterFrame", orbit ) 
+      rocket:toFront()
+      if(left == true) then
+         aPlanet.x = -200
+      aPlanet.y = -200 
+      transition.to( aPlanet, { time = 1500, x = 200, y = 300} )
+      left = false
+      score = score + 10
+      displayScore:toFront()
+      else
+         aPlanet.x = 500
+         aPlanet.y = -200 
+         transition.to( aPlanet, { time = 1500, x = 500, y = 300} )
+         left = true
+         score = score + 10
+         displayScore:toFront()
+      end
+
+      
+      timer.pause(gameLoopTimer)
+      display.remove(bPlanet)
+       print("bPlanetx"..tPlanet.x)
+      
+      transition.to( tPlanet, {time = 1500, x = bPlanet.x, y = bPlanet.y} )
+      transition.to( rocket, { time = 1500, x = bPlanet.x, y = bPlanet.y} )
+      tPlanet:addEventListener("tap", launch)
+      
+      --bPlanet = tPlanet
+      bPlanet = tPlanet
+      tPlanet = aPlanet 
+      
+end 
+
+end
+
+
+
+
