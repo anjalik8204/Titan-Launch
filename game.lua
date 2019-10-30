@@ -1,7 +1,7 @@
 
 local composer = require( "composer" )
 
-local scene = composer.newScene()
+ scene = composer.newScene()
 
 -- -----------------------------------------------------------------------------------
 -- Code outside of the scene event functions below will only be executed ONCE unless
@@ -20,11 +20,11 @@ local function totalGame()
 	background.x = display.contentCenterX
 	background.y = display.contentCenterY
 	
-	local bPlanet = display.newImageRect("planet.png",  500, 400 )
+	local bPlanet = display.newImageRect("planet13.png",  1800, 1000 )
 	bPlanet.x = display.contentCenterX
 	bPlanet.y =  1000
 	
-	local tPlanet = display.newImageRect("planet.png", 500, 400, 15 )
+	local tPlanet = display.newImageRect("planet13.png", 1800, 1000, 15 )
 	tPlanet.x = 500
 	tPlanet.y = 300
 	
@@ -37,7 +37,8 @@ local function totalGame()
 	local tanX
 	local tanY
 	local score = 0 
-	local displayScore = display.newText("your score : "..score, 300, 100, native.systemFont, 50)
+	local died = false
+	--local displayScore = display.newText("your score : "..score, 300, 100, native.systemFont, 50)
 	
 	local rocket = display.newCircle( 500, 700, 25)
 	rocket.x = display.contentCenterX
@@ -70,24 +71,27 @@ local function totalGame()
 	 function gameLoop (event)
 	   if (rocket.y <= 400 and rocket.x <= 700 and rocket.x >= 100 ) then
 	
-		  local aPlanet = display.newImageRect("planet.png", 500, 400)
+		  local aPlanet = display.newImageRect("planet13.png", 1800, 1000)
+		  aPlanet.x = -10000
+		  aPlanet.y = -10000
 		 -- aPlanet:toBack()
 		  Runtime:addEventListener( "enterFrame", orbit ) 
 		  rocket:toFront()
 		  if(left == true) then
 			 aPlanet.x = -200
-		  aPlanet.y = -200 
+		  	aPlanet.y = -200 
 		  transition.to( aPlanet, { time = 1500, x = 200, y = 300} )
 		  left = false
-		  score = score + 10
-		  displayScore:toFront()
+		  --score = score + 10
+		  --displayScore:toFront()
 		  else
+			aPlanet = display.newImageRect("planet13.png", 1800, 1000)
 			 aPlanet.x = 500
 			 aPlanet.y = -200 
 			 transition.to( aPlanet, { time = 1500, x = 500, y = 300} )
 			 left = true
-			 score = score + 10
-			 displayScore:toFront()
+			 --score = score + 10
+			 --displayScore:toFront()
 		  end
 	
 	
@@ -102,13 +106,11 @@ local function totalGame()
 		  --bPlanet = tPlanet
 		  bPlanet = tPlanet
 		  tPlanet = aPlanet 
-	
-	end 
-	
+
+		
 	end
 	end
-
-
+end
 
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
@@ -172,5 +174,4 @@ scene:addEventListener( "show", scene )
 scene:addEventListener( "hide", scene )
 scene:addEventListener( "destroy", scene )
 -- -----------------------------------------------------------------------------------
-
 return scene
